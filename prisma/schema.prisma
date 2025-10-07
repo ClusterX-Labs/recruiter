@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  title       String @map("title")
+  description String @map("description")
+  position    String @map("position")
+
+  applicants Applicant[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("job")
+}
+
+model Applicant {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  firstName String  @map("first_name")
+  lastName  String? @map("last_name")
+  email     String  @map("email")
+  phone     String? @map("phone")
+
+  resumeId String @unique @map("resume_id") @db.ObjectId
+  resume   Resume @relation(fields: [resumeId], references: [id])
+
+  addressId String?  @map("address_id") @db.ObjectId
+  address   Address? @relation(fields: [addressId], references: [id])
+
+  jobId String @db.ObjectId
+  job   Job    @relation(fields: [jobId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([email, jobId])
+  @@map("applicant")
+}
+
+model Address {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  line1      String  @map("line1")
+  line2      String? @map("line2")
+  city       String  @map("city")
+  state      String? @map("state")
+  postalCode String? @map("postal_code")
+  country    String  @default("Sri Lanka") @map("country")
+
+  applicants Applicant[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("address")
+}
+
+model Resume {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  url          String   @map("url")
+  summary      String?  @map("summary")
+  skills       String[] @map("skills")
+  embedding    Float[]  @map("embedding")
+  embedingText String?  @map("embeding_text")
+
+  applicant Applicant?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("resume")
+}
